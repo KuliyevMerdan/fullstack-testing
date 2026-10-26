@@ -1,0 +1,18 @@
+:root {
+  color-scheme: light dark;
+}
+
+body {
+  background: var(--tg-theme-bg-color, Canvas);
+  color: var(--tg-theme-text-color, CanvasText);
+  font-family: system-ui, sans-serif;
+}
+
+a {
+  color: var(--tg-theme-link-color, LinkText);
+}
+
+button {
+  background: var(--tg-theme-button-color, ButtonFace);
+  color: var(--tg-theme-button-text-color, ButtonText);
+}

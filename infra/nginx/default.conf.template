@@ -1,0 +1,42 @@
+resolver 127.0.0.11 valid=10s ipv6=off;
+
+map $http_x_forwarded_proto $forwarded_proto {
+    default $http_x_forwarded_proto;
+    ""      $scheme;
+}
+
+upstream api   { zone api 64k;   server api:8000 resolve; }
+upstream web   { zone web 64k;   server web:3000 resolve; }
+upstream bot   { zone bot 64k;   server bot:8080 resolve; }
+upstream minio { zone minio 64k; server minio:9000 resolve; }
+
+server {
+    listen 80;
+    client_max_body_size 20m;
+
+    proxy_set_header Host              $host;
+    proxy_set_header X-Real-IP         $remote_addr;
+    proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $forwarded_proto;
+
+    add_header X-Upstream $upstream_addr always;
+
+    location /api/ {
+        proxy_pass http://api;
+    }
+
+    location /tg/ {
+        proxy_pass http://bot;
+    }
+
+    location /media/ {
+        proxy_pass http://minio/${S3_BUCKET}/;
+        proxy_set_header Host minio:9000;
+        proxy_set_header Authorization "";
+        proxy_hide_header Set-Cookie;
+    }
+
+    location / {
+        proxy_pass http://web;
+    }
+}
